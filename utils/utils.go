@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"os"
 	"strconv"
+	"strings"
 )
 
 // Check panics if error is not nil
@@ -44,4 +45,13 @@ func ToInt(text string) int {
 	x, err := strconv.Atoi(text)
 	Check(err)
 	return x
+}
+
+// IntList converts comma separated string into integer array
+func IntList(list string) []int {
+	var numbers []int
+	for _, num := range strings.Split(list, ",") {
+		numbers = append(numbers, ToInt(num))
+	}
+	return numbers
 }

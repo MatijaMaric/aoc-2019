@@ -10,33 +10,29 @@ const target = 19690720
 
 func main() {
 	lines := utils.ReadLines("input.txt")
-	resetCode := utils.IntList(lines[0])
-	numCode := make([]int, len(resetCode))
-	{
-		copy(numCode, resetCode)
+	code := utils.IntList(lines[0])
 
-		numCode[1] = 12
-		numCode[2] = 2
+	ans := runMachine(code, 12, 2)
+	fmt.Println(ans)
 
-		intCodeMachine(numCode)
-		fmt.Println(numCode[0])
-	}
-	{
-		for i := 0; i <= 99; i++ {
-			for j := 0; j <= 99; j++ {
-				copy(numCode, resetCode)
-
-				numCode[1] = i
-				numCode[2] = j
-
-				intCodeMachine(numCode)
-				if numCode[0] == target {
-					fmt.Println(100*i + j)
-				}
+	for i := 0; i <= 99; i++ {
+		for j := 0; j <= 99; j++ {
+			ans := runMachine(code, i, j)
+			if ans == target {
+				fmt.Println(100*i + j)
 			}
 		}
 	}
 
+}
+
+func runMachine(input []int, noun int, verb int) int {
+	code := make([]int, len(input))
+	copy(code, input)
+	code[1] = noun
+	code[2] = verb
+	intCodeMachine(code)
+	return code[0]
 }
 
 func intCodeMachine(input []int) {

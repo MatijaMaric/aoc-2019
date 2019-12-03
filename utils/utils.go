@@ -55,3 +55,19 @@ func IntList(list string) []int {
 	}
 	return numbers
 }
+
+// Abs gets absolute value of integer
+func Abs(x int) int {
+	if x < 0 {
+		return -x
+	}
+	return x
+}
+
+// Min gets minimum of two integers
+func Min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}

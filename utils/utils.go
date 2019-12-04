@@ -47,6 +47,11 @@ func ToInt(text string) int {
 	return x
 }
 
+// IntToStr converts integer to string
+func IntToStr(number int) string {
+	return strconv.Itoa(number)
+}
+
 // IntList converts comma separated string into integer array
 func IntList(list string) []int {
 	var numbers []int

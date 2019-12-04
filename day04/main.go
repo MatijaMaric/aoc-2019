@@ -30,11 +30,13 @@ func solve(from, to int) int {
 
 func isValid(number int) bool {
 	str := utils.IntToStr(number)
-	hasDoubles := false
 	increases := true
+	hasDoubles := false
 	for i := 0; i < len(str)-1; i++ {
 		if str[i] == str[i+1] {
-			hasDoubles = true
+			if !(i < len(str)-2 && str[i] == str[i+2] || i > 0 && str[i] == str[i-1]) {
+				hasDoubles = true
+			}
 		}
 		if str[i] > str[i+1] {
 			increases = false

@@ -8,8 +8,10 @@ import (
 
 func main() {
 	codes := utils.IntList(utils.ReadLines("input.txt")[0])
-	output := intCodeMachine(codes, 1)
-	fmt.Println(output)
+	output1 := intCodeMachine(codes, 1)
+	fmt.Println(output1)
+	output2 := intCodeMachine(codes, 5)
+	fmt.Println(output2)
 }
 
 func parseInstruction(memory []int, pc int) (arg1, arg2, target int) {
@@ -54,6 +56,36 @@ func intCodeMachine(program []int, input int) int {
 			}
 			output = arg
 			pc += 2
+		case 5:
+			a, b, _ := parseInstruction(memory, pc)
+			if a != 0 {
+				pc = b
+			} else {
+				pc += 3
+			}
+		case 6:
+			a, b, _ := parseInstruction(memory, pc)
+			if a == 0 {
+				pc = b
+			} else {
+				pc += 3
+			}
+		case 7:
+			a, b, target := parseInstruction(memory, pc)
+			if a < b {
+				memory[target] = 1
+			} else {
+				memory[target] = 0
+			}
+			pc += 4
+		case 8:
+			a, b, target := parseInstruction(memory, pc)
+			if a == b {
+				memory[target] = 1
+			} else {
+				memory[target] = 0
+			}
+			pc += 4
 		case 99:
 			return output
 		default:

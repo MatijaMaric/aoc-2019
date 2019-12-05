@@ -12,43 +12,52 @@ func main() {
 	fmt.Println(output)
 }
 
-func flags(instruction int) (b bool, a bool) {
-	number := instruction / 100
-	b = number%10 == 1
-	number = number / 10
-	a = number%10 == 1
+func parseInstruction(memory []int, pc int) (arg1, arg2, target int) {
+	instruction := memory[pc]
+	arg1 = memory[pc+1]
+	if (instruction%1000)/100 == 0 {
+		arg1 = memory[arg1]
+	}
+	arg2 = memory[pc+2]
+	if (instruction%10000)/1000 == 0 {
+		arg2 = memory[arg2]
+	}
+	target = memory[pc+3]
 	return
 }
 
 func intCodeMachine(program []int, input int) int {
+	memory := make([]int, len(program))
+	copy(memory, program)
+
 	pc := 0
 	output := 0
-	for program[pc]%100 != 99 {
-		opcode := program[pc]
-		b, a := flags(opcode)
-		opcode = program[pc] % 100
-		x := program[program[pc+1]]
-		if a {
-			x = program[pc+1]
-		}
-		y := program[program[pc+2]]
-		if b {
-			y = program[pc+2]
-		}
+	for {
+		instruction := memory[pc]
+		opcode := instruction % 100
 		switch opcode {
 		case 1:
-			program[program[pc+3]] = x + y
+			a, b, target := parseInstruction(memory, pc)
+			memory[target] = a + b
 			pc += 4
 		case 2:
-			program[program[pc+3]] = x * y
+			a, b, target := parseInstruction(memory, pc)
+			memory[target] = a * b
 			pc += 4
 		case 3:
-			program[program[pc+1]] = input
+			memory[memory[pc+1]] = input
 			pc += 2
 		case 4:
-			output = program[program[pc+1]]
+			arg := memory[pc+1]
+			if instruction%1000/100 == 0 {
+				arg = memory[arg]
+			}
+			output = arg
 			pc += 2
+		case 99:
+			return output
+		default:
+			panic("nooo")
 		}
 	}
-	return output
 }

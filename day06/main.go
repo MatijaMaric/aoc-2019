@@ -36,7 +36,7 @@ func main() {
 	count := countOrbits(orbitMap, rootPlanet, 0)
 	fmt.Println(count)
 
-	shortest := bfs(fullLookup, "YOU", "SAN")
+	shortest := bfs(fullLookup, "YOU", "SAN") - 2
 	fmt.Println(shortest)
 }
 
@@ -69,7 +69,7 @@ func bfs(orbits map[string][]string, from string, to string) int {
 		queue = queue[1:]
 		visited[current.planet] = true
 		if current.planet == to {
-			return current.dist - 2
+			return current.dist
 		}
 		for _, planet := range orbits[current.planet] {
 			if !visited[planet] {

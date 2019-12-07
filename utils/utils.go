@@ -76,3 +76,11 @@ func Min(a, b int) int {
 	}
 	return b
 }
+
+// Min gets minimum of two integers
+func Max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}

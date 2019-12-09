@@ -10,7 +10,7 @@ func main() {
 	code := utils.IntList(utils.ReadLines("input.txt")[0])
 	input, output := make(chan int, 1), make(chan int)
 
-	input <- 1
+	input <- 2
 
 	go utils.IntCodeMachine(code, input, output)
 

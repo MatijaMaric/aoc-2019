@@ -1,0 +1,20 @@
+package main
+
+import (
+	"fmt"
+
+	"github.com/MatijaMaric/aoc-2019/utils"
+)
+
+func main() {
+	code := utils.IntList(utils.ReadLines("test.txt")[0])
+	input, output := make(chan int, 1), make(chan int)
+
+	input <- 1
+
+	go utils.IntCodeMachine(code, input, output)
+
+	for out := range output {
+		fmt.Println(out)
+	}
+}

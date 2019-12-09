@@ -77,10 +77,19 @@ func Min(a, b int) int {
 	return b
 }
 
-// Min gets minimum of two integers
+// Max gets maximum of two integers
 func Max(a, b int) int {
 	if a > b {
 		return a
 	}
 	return b
+}
+
+// ArrayToMap converts an integer array to map
+func ArrayToMap(array []int) map[int]int {
+	ans := make(map[int]int)
+	for i, val := range array {
+		ans[i] = val
+	}
+	return ans
 }

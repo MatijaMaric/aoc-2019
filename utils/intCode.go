@@ -12,28 +12,30 @@ func getMode(instruction int, pos int) int {
 	return instruction % pow10(pos+2) / pow10(pos+1)
 }
 
-func getArg(memory map[int]int, pc int, pos int, rel int) int {
+func getArg(memory map[int]int, pc int, pos int, rel int, read bool) int {
 	instruction := memory[pc]
-	mode := getMode(instruction, pos+1)
-	arg := memory[pc+pos+1]
-	if mode == 0 {
+	mode := getMode(instruction, pos)
+	arg := memory[pc+pos]
+	if mode == 0 && read {
 		arg = memory[arg]
-	} else if mode == 2 {
+	} else if mode == 2 && read {
 		arg = memory[arg+rel]
+	} else if mode == 2 && !read {
+		arg += rel
 	}
 	return arg
 }
 
 func unaryInstruction(memory map[int]int, pc int, rel int) (arg, res int) {
-	arg = getArg(memory, pc, 0, rel)
-	res = memory[pc+2]
+	arg = getArg(memory, pc, 1, rel, true)
+	res = getArg(memory, pc, 2, rel, false)
 	return
 }
 
 func binaryInstruction(memory map[int]int, pc int, rel int) (arg1, arg2, res int) {
-	arg1 = getArg(memory, pc, 0, rel)
-	arg2 = getArg(memory, pc, 1, rel)
-	res = memory[pc+3]
+	arg1 = getArg(memory, pc, 1, rel, true)
+	arg2 = getArg(memory, pc, 2, rel, true)
+	res = getArg(memory, pc, 3, rel, false)
 	return
 }
 
@@ -56,8 +58,8 @@ func IntCodeMachine(program []int, input chan int, output chan int) {
 			memory[res] = a * b
 			pc += 4
 		case 3:
-			a, _ := unaryInstruction(memory, pc, rel)
-			memory[a] = <-input
+			addr := getArg(memory, pc, 1, rel, false)
+			memory[addr] = <-input
 			pc += 2
 		case 4:
 			a, _ := unaryInstruction(memory, pc, rel)

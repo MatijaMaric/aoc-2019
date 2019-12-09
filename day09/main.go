@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	code := utils.IntList(utils.ReadLines("test.txt")[0])
+	code := utils.IntList(utils.ReadLines("input.txt")[0])
 	input, output := make(chan int, 1), make(chan int)
 
 	input <- 1

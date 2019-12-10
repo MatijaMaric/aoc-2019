@@ -1,5 +1,7 @@
 package utils
 
+import "math"
+
 // Vector2D is a vector in 2D space
 type Vector2D struct {
 	X int
@@ -40,4 +42,9 @@ func (v Vector2D) Eq(other Vector2D) bool {
 // Copy returns copy of vector
 func (v Vector2D) Copy() Vector2D {
 	return Vector2D{v.X, v.Y}
+}
+
+// Angle returns angle of vector
+func (v Vector2D) Angle() float64 {
+	return 2.0*math.Pi - (math.Atan2(float64(v.X), float64(v.Y)) + math.Pi)
 }

@@ -93,3 +93,11 @@ func ArrayToMap(array []int) map[int]int {
 	}
 	return ans
 }
+
+// Gcd returns greatest common divisor
+func Gcd(a, b int) int {
+	for b != 0 {
+		a, b = b, a%b
+	}
+	return a
+}

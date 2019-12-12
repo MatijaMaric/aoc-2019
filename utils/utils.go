@@ -101,3 +101,18 @@ func Gcd(a, b int) int {
 	}
 	return a
 }
+
+// Sgn return sign of number
+func Sgn(x int) int {
+	if x < 0 {
+		return -1
+	} else if x > 0 {
+		return 1
+	}
+	return 0
+}
+
+// Lcm returns least common multiple of two numbers
+func Lcm(a, b int) int {
+	return Abs(a*b) / Gcd(a, b)
+}

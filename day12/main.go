@@ -30,8 +30,7 @@ func main() {
 		moons = append(moons, moon{position: moonPosition})
 	}
 
-	initialState := make([]moon, len(moons))
-	copy(initialState, moons)
+	initialX, initialY, initialZ := splitAxis(moons)
 
 	for i := 0; i < 1000; i++ {
 		simulate(moons)
@@ -43,19 +42,37 @@ func main() {
 
 	fmt.Println(energy)
 
-	moons = initialState
-	initialState = make([]moon, len(moons))
-	copy(initialState, moons)
+	moonX := make([]moon, len(initialX))
+	moonY := make([]moon, len(initialY))
+	moonZ := make([]moon, len(initialZ))
+	copy(moonX, initialX)
+	copy(moonY, initialY)
+	copy(moonZ, initialZ)
 
-	count := 0
+	var stepsX, stepsY, stepsZ int
 	for {
-		simulate(moons)
-		count++
-		if compareState(moons, initialState) {
+		simulate(moonX)
+		stepsX++
+		if compareState(moonX, initialX) {
 			break
 		}
 	}
-	fmt.Println(count)
+	for {
+		simulate(moonY)
+		stepsY++
+		if compareState(moonY, initialY) {
+			break
+		}
+	}
+	for {
+		simulate(moonZ)
+		stepsZ++
+		if compareState(moonZ, initialZ) {
+			break
+		}
+	}
+	steps := utils.Lcm(utils.Lcm(stepsX, stepsY), stepsZ)
+	fmt.Println(steps)
 }
 
 func simulate(moons []moon) {
@@ -83,4 +100,13 @@ func compareState(a, b []moon) bool {
 		}
 	}
 	return true
+}
+
+func splitAxis(moons []moon) (moonX []moon, moonY []moon, moonZ []moon) {
+	for i := range moons {
+		moonX = append(moonX, moon{moons[i].position.JustX(), moons[i].velocity.JustX()})
+		moonY = append(moonY, moon{moons[i].position.JustY(), moons[i].velocity.JustY()})
+		moonZ = append(moonZ, moon{moons[i].position.JustZ(), moons[i].velocity.JustZ()})
+	}
+	return
 }

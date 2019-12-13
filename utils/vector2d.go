@@ -1,6 +1,8 @@
 package utils
 
-import "math"
+import (
+	"math"
+)
 
 // Vector2D is a vector in 2D space
 type Vector2D struct {
@@ -47,4 +49,14 @@ func (v Vector2D) Copy() Vector2D {
 // Angle returns angle of vector
 func (v Vector2D) Angle() float64 {
 	return 2.0*math.Pi - (math.Atan2(float64(v.X), float64(v.Y)) + math.Pi)
+}
+
+// MinVec2 returns vector in 2d space with minimum of both axis
+func MinVec2(a, b Vector2D) Vector2D {
+	return Vector2D{X: Min(a.X, b.X), Y: Min(a.Y, b.Y)}
+}
+
+// MaxVec2 returns vector in 2d space with maximum of both axis
+func MaxVec2(a, b Vector2D) Vector2D {
+	return Vector2D{X: Max(a.X, b.X), Y: Max(a.Y, b.Y)}
 }

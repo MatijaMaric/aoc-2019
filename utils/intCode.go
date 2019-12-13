@@ -1,5 +1,10 @@
 package utils
 
+// ReadIntCode reads IntCode from file
+func ReadIntCode(path string) []int {
+	return IntList(ReadLines(path)[0])
+}
+
 func pow10(x int) int {
 	ans := 1
 	for i := 0; i < x; i++ {

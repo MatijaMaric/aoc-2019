@@ -106,7 +106,7 @@ func runRobot(code []int, path []int) (status int) {
 		input <- move
 		status = <-output
 		if status != moved && i < len(path)-1 {
-			fmt.Println("YOOOO")
+			panic("noooo")
 		}
 	}
 	return

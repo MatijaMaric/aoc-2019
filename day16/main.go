@@ -8,14 +8,36 @@ import (
 
 func main() {
 	input := utils.ReadLines("input.txt")[0]
-	fmt.Println(len(input))
 	digits := toDigits(input)
-	part1 := fft(digits, 100)
-	fmt.Println(toInt(part1[:8]))
-	digits = repeat(digits, 10000)
-	offset := toInt(digits[:7])
-	part2 := fft(digits[offset:], 100)
-	fmt.Println(toInt(part2[:8]))
+	{
+		part1 := make([]int, len(digits))
+		copy(part1, digits)
+		for i := 0; i < 100; i++ {
+			part1 = fft(part1)
+		}
+		fmt.Println(toInt(part1[:8]))
+
+	}
+	{
+		digits = repeat(digits, 10000)
+		offset := toInt(digits[:7])
+		digits = digits[offset:]
+		part2 := make([]int, len(digits))
+		copy(part2, digits)
+		// fmt.Println(len(part2))
+		// for i := 0; i < 100; i++ {
+		// 	fmt.Println(i)
+		// 	part2 = fft(part2)
+		// }
+		// all ones probably fuck it
+		for i := 0; i < 100; i++ {
+			for j := len(part2) - 2; j >= 0; j-- {
+				part2[j] += part2[j+1]
+				part2[j] %= 10
+			}
+		}
+		fmt.Println(toInt(part2[:8]))
+	}
 }
 
 func repeat(array []int, times int) []int {
@@ -45,21 +67,15 @@ func toInt(digits []int) int {
 	return ans
 }
 
-func fft(digits []int, phases int) []int {
+func fft(digits []int) []int {
 	pattern := []int{0, 1, 0, -1}
 	ans := make([]int, len(digits))
-	copy(ans, digits)
-	for phase := 0; phase < phases; phase++ {
-		fmt.Println(phase)
-		new := make([]int, len(digits))
-		for i := 0; i < len(digits); i++ {
-			for j := 0; j < len(digits); j++ {
-				tmp := pattern[((j+1)/(i+1))%4]
-				new[i] = new[i] + ans[j]*tmp
-			}
-			new[i] = utils.Abs(new[i]) % 10
+	for i := 0; i < len(digits); i++ {
+		for j := 0; j < len(digits); j++ {
+			tmp := pattern[((j+1)/(i+1))%4]
+			ans[i] = ans[i] + digits[j]*tmp
 		}
-		copy(ans, new)
+		ans[i] = utils.Abs(ans[i]) % 10
 	}
 	return ans
 }

@@ -18,6 +18,8 @@ var (
 	left  = vec2{X: -1}
 )
 
+var directions []vec2 = []vec2{up, right, down, left}
+
 func main() {
 	code := utils.ReadIntCode("input.txt")
 	grid, dim := part1(code)
@@ -175,17 +177,10 @@ func printGrid(grid map[vec2]rune, dim vec2) {
 }
 
 func countAdjacent(grid map[vec2]rune, pos vec2) (ans int) {
-	if grid[pos.Add(right)] == '#' {
-		ans++
-	}
-	if grid[pos.Add(left)] == '#' {
-		ans++
-	}
-	if grid[pos.Add(down)] == '#' {
-		ans++
-	}
-	if grid[pos.Add(up)] == '#' {
-		ans++
+	for _, dir := range directions {
+		if grid[pos.Add(dir)] == '#' {
+			ans++
+		}
 	}
 	return
 }

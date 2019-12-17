@@ -76,7 +76,7 @@ func part2(code []int, grid map[vec2]rune, dim vec2) int {
 	input <- '\n'
 
 	for dust := range output {
-		if dust < 128 {
+		if dust < 256 {
 			fmt.Printf("%c", rune(dust))
 		} else {
 			return dust

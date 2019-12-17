@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/MatijaMaric/aoc-2019/utils"
@@ -12,7 +14,8 @@ type vec2 = utils.Vector2D
 func main() {
 	code := utils.ReadIntCode("input.txt")
 	grid, dim := part1(code)
-	part2(code, grid, dim)
+	dust := part2(code, grid, dim)
+	fmt.Println(dust)
 }
 
 func part1(code []int) (grid map[vec2]rune, dim vec2) {
@@ -49,18 +52,37 @@ func part1(code []int) (grid map[vec2]rune, dim vec2) {
 		}
 	}
 
+	// printGrid(grid, dim)
+
 	fmt.Println(part1)
 	return
 }
 
-func part2(code []int, grid map[vec2]rune, dim vec2) {
+func part2(code []int, grid map[vec2]rune, dim vec2) int {
 	code[0] = 2
-	input, output := make(chan int, 1), make(chan int)
+	input, output := make(chan int, 1000), make(chan int)
 
 	go utils.IntCodeMachine(code, input, output)
 
 	instructions := getInstructions(grid, dim)
-	fmt.Println(instructions)
+	// fmt.Println(strings.Join(instructions, ""))
+	compressed := compress(strings.Join(instructions, ""))
+	// fmt.Println(compressed)
+
+	for _, x := range compressed {
+		input <- int(x)
+	}
+	input <- 'n'
+	input <- '\n'
+
+	for dust := range output {
+		if dust < 128 {
+			fmt.Printf("%c", rune(dust))
+		} else {
+			return dust
+		}
+	}
+	return -1
 }
 
 func getRobot(grid map[vec2]rune) (pos, orientation vec2) {
@@ -79,20 +101,41 @@ func getRobot(grid map[vec2]rune) (pos, orientation vec2) {
 	panic("nooooo")
 }
 
+// pobogu zašto
 func getRotation(current, next vec2) rune {
-	if current.X == 1 {
-		if next.Y == 1 {
-			return 'R'
-		} else {
+	if current.Eq(vec2{Y: -1}) {
+		if next.Eq(vec2{X: -1}) {
 			return 'L'
 		}
-	} else {
-		if next.Y == 1 {
-			return 'L'
-		} else {
+		if next.Eq(vec2{X: 1}) {
 			return 'R'
 		}
 	}
+	if current.Eq(vec2{X: 1}) {
+		if next.Eq(vec2{Y: -1}) {
+			return 'L'
+		}
+		if next.Eq(vec2{Y: 1}) {
+			return 'R'
+		}
+	}
+	if current.Eq(vec2{Y: 1}) {
+		if next.Eq(vec2{X: 1}) {
+			return 'L'
+		}
+		if next.Eq(vec2{X: -1}) {
+			return 'R'
+		}
+	}
+	if current.Eq(vec2{X: -1}) {
+		if next.Eq(vec2{Y: 1}) {
+			return 'L'
+		}
+		if next.Eq(vec2{Y: -1}) {
+			return 'R'
+		}
+	}
+	panic("nooo")
 }
 
 func getInstructions(grid map[vec2]rune, dim vec2) []string {
@@ -103,9 +146,6 @@ func getInstructions(grid map[vec2]rune, dim vec2) []string {
 	moves := 0
 	var instruction rune
 
-	printGrid(grid, dim)
-	fmt.Println()
-
 	for {
 		next := pos.Add(orientation)
 		if grid[next] == '#' {
@@ -115,10 +155,9 @@ func getInstructions(grid map[vec2]rune, dim vec2) []string {
 			moves++
 			pos = next
 		} else {
-			printGrid(grid, dim)
-			fmt.Println()
 			new := fmt.Sprintf("%c,%d,", instruction, moves)
 			ans = append(ans, new)
+			moves = 0
 			if grid[pos.Add(vec2{X: 1})] == '#' {
 				instruction = getRotation(orientation, vec2{X: 1})
 				orientation = vec2{X: 1}
@@ -164,4 +203,53 @@ func countAdjacent(grid map[vec2]rune, pos vec2) (ans int) {
 		ans++
 	}
 	return
+}
+
+func compress(original string) string {
+	instructionRegex := regexp.MustCompile("[LR],\\d+,")
+	instructions := instructionRegex.FindAllString(original, -1)
+
+	patSet := make(map[string]bool)
+	for i := 0; i < len(instructions); i++ {
+		for j := i; j < len(instructions); j++ {
+			comb := strings.Join(instructions[i:j+1], "")
+			if len(comb) <= 20 {
+				if strings.Count(original, comb) > 1 {
+					patSet[comb] = true
+				}
+			}
+		}
+	}
+
+	var patterns []string
+	for k := range patSet {
+		patterns = append(patterns, k)
+	}
+
+	for i := 0; i < len(patterns)-2; i++ {
+		for j := i + 1; j < len(patterns)-1; j++ {
+			for k := j + 1; k < len(patterns); k++ {
+				sorted := []string{patterns[i], patterns[j], patterns[k]}
+				sort.Slice(sorted, func(a, b int) bool {
+					return len(sorted[a]) > len(sorted[b])
+				})
+				substituted := strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(original, sorted[0], "A,"), sorted[1], "B,"), sorted[2], "C,")
+				if !strings.ContainsAny(substituted, "LR") {
+					var builder strings.Builder
+
+					builder.WriteString(strings.TrimSuffix(substituted, ","))
+					builder.WriteRune('\n')
+					builder.WriteString(strings.TrimSuffix(sorted[0], ","))
+					builder.WriteRune('\n')
+					builder.WriteString(strings.TrimSuffix(sorted[1], ","))
+					builder.WriteRune('\n')
+					builder.WriteString(strings.TrimSuffix(sorted[2], ","))
+					builder.WriteRune('\n')
+
+					return builder.String()
+				}
+			}
+		}
+	}
+	panic("no result")
 }

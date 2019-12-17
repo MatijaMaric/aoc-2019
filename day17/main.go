@@ -11,6 +11,13 @@ import (
 
 type vec2 = utils.Vector2D
 
+var (
+	up    = vec2{Y: -1}
+	right = vec2{X: 1}
+	down  = vec2{Y: 1}
+	left  = vec2{X: -1}
+)
+
 func main() {
 	code := utils.ReadIntCode("input.txt")
 	grid, dim := part1(code)
@@ -66,8 +73,8 @@ func part2(code []int, grid map[vec2]rune, dim vec2) int {
 
 	instructions := getInstructions(grid, dim)
 	// fmt.Println(strings.Join(instructions, ""))
-	compressed := compress(strings.Join(instructions, ""))
-	// fmt.Println(compressed)
+	compressed := compress(instructions)
+	fmt.Println(compressed)
 
 	for _, x := range compressed {
 		input <- int(x)
@@ -89,57 +96,40 @@ func getRobot(grid map[vec2]rune) (pos, orientation vec2) {
 	for k, v := range grid {
 		switch v {
 		case '^':
-			return k, vec2{Y: -1}
+			return k, up
 		case 'v':
-			return k, vec2{Y: 1}
+			return k, down
 		case '>':
-			return k, vec2{X: 1}
+			return k, right
 		case '<':
-			return k, vec2{X: -1}
+			return k, left
 		}
 	}
 	panic("nooooo")
 }
 
-// pobogu zašto
-func getRotation(current, next vec2) rune {
-	if current.Eq(vec2{Y: -1}) {
-		if next.Eq(vec2{X: -1}) {
-			return 'L'
-		}
-		if next.Eq(vec2{X: 1}) {
-			return 'R'
-		}
+func turnLeft(v vec2) vec2 {
+	if v.Eq(up) {
+		return left
 	}
-	if current.Eq(vec2{X: 1}) {
-		if next.Eq(vec2{Y: -1}) {
-			return 'L'
-		}
-		if next.Eq(vec2{Y: 1}) {
-			return 'R'
-		}
+	if v.Eq(right) {
+		return up
 	}
-	if current.Eq(vec2{Y: 1}) {
-		if next.Eq(vec2{X: 1}) {
-			return 'L'
-		}
-		if next.Eq(vec2{X: -1}) {
-			return 'R'
-		}
+	if v.Eq(down) {
+		return right
 	}
-	if current.Eq(vec2{X: -1}) {
-		if next.Eq(vec2{Y: 1}) {
-			return 'L'
-		}
-		if next.Eq(vec2{Y: -1}) {
-			return 'R'
-		}
+	if v.Eq(left) {
+		return down
 	}
 	panic("nooo")
 }
 
-func getInstructions(grid map[vec2]rune, dim vec2) []string {
-	var ans []string
+func turnRight(v vec2) vec2 {
+	return turnLeft(v).Multiply(-1)
+}
+
+func getInstructions(grid map[vec2]rune, dim vec2) string {
+	var builder strings.Builder
 	pos, orientation := getRobot(grid)
 	grid[pos] = '.'
 
@@ -155,28 +145,23 @@ func getInstructions(grid map[vec2]rune, dim vec2) []string {
 			moves++
 			pos = next
 		} else {
-			new := fmt.Sprintf("%c,%d,", instruction, moves)
-			ans = append(ans, new)
+			if moves > 0 {
+				builder.WriteString(fmt.Sprintf("%c,%d,", instruction, moves))
+			}
 			moves = 0
-			if grid[pos.Add(vec2{X: 1})] == '#' {
-				instruction = getRotation(orientation, vec2{X: 1})
-				orientation = vec2{X: 1}
-			} else if grid[pos.Add(vec2{X: -1})] == '#' {
-				instruction = getRotation(orientation, vec2{X: -1})
-				orientation = vec2{X: -1}
-			} else if grid[pos.Add(vec2{Y: 1})] == '#' {
-				instruction = getRotation(orientation, vec2{Y: 1})
-				orientation = vec2{Y: 1}
-			} else if grid[pos.Add(vec2{Y: -1})] == '#' {
-				instruction = getRotation(orientation, vec2{Y: -1})
-				orientation = vec2{Y: -1}
+			if turn := turnLeft(orientation); grid[pos.Add(turn)] == '#' {
+				instruction = 'L'
+				orientation = turn
+			} else if turn := turnRight(orientation); grid[pos.Add(turn)] == '#' {
+				instruction = 'R'
+				orientation = turn
 			} else {
 				break
 			}
 		}
 	}
 
-	return ans[1:]
+	return builder.String()
 }
 
 func printGrid(grid map[vec2]rune, dim vec2) {
@@ -190,16 +175,16 @@ func printGrid(grid map[vec2]rune, dim vec2) {
 }
 
 func countAdjacent(grid map[vec2]rune, pos vec2) (ans int) {
-	if grid[pos.Add(vec2{X: 1})] == '#' {
+	if grid[pos.Add(right)] == '#' {
 		ans++
 	}
-	if grid[pos.Add(vec2{X: -1})] == '#' {
+	if grid[pos.Add(left)] == '#' {
 		ans++
 	}
-	if grid[pos.Add(vec2{Y: 1})] == '#' {
+	if grid[pos.Add(down)] == '#' {
 		ans++
 	}
-	if grid[pos.Add(vec2{Y: -1})] == '#' {
+	if grid[pos.Add(up)] == '#' {
 		ans++
 	}
 	return

@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"math"
-	"os"
 	"sort"
 	"strings"
 
@@ -21,52 +20,107 @@ var (
 
 var directions = []vec2{up, right, down, left}
 
+var chars = "abcdefghijklmnopqrstuvwxyz@"
+
 func main() {
 	grid := utils.ReadGrid("input.txt")
 
 	utils.PrintGrid(grid)
 
-	start := getNode(grid, '@')
+	edges := getEdges(grid)
+	min := solve(edges)
 
-	part1 := findKeys(grid, start, "", 0)
-
-	file, _ := os.Create("out.txt")
-	defer file.Close()
-	fmt.Fprintln(file, part1)
-
+	fmt.Println(min)
 }
 
-func findKeys(grid map[vec2]rune, start vec2, keys string, dist int) int {
-	if len(keys) == 26 {
-		return dist
+func printEdge(e map[rune]edge) {
+	for k, v := range e {
+		fmt.Printf("%c ", k)
+		fmt.Println(v)
 	}
-	reachable := bfs(grid, start, keys)
-	min := math.MaxInt32
-	c := make(chan int, 26)
-	for k, v := range reachable {
-		newKeys := utils.AppendRune(keys, k)
-		go func(p vec2, in string, d int) {
-			c <- findKeys(grid, p, in, d)
-		}(v.pos, newKeys, dist+v.dist)
-	}
-
-	for i := 0; i < len(reachable); i++ {
-		min = utils.Min(min, <-c)
-	}
-	return min
 }
 
-type keyPos struct {
-	pos vec2
-
+type node struct {
+	val  rune
+	keys string
 	dist int
 }
 
-func bfs(grid map[vec2]rune, start vec2, keys string) map[rune]keyPos {
+func bitwiseKeys(keys string) int {
+	ans := 0
+	for i, c := range chars {
+		if strings.ContainsRune(keys, c) {
+			ans |= 1 << i
+		}
+	}
+	return ans
+}
+
+func solve(edges map[rune](map[rune]edge)) int {
+	visited := make(map[rune](map[int]bool))
+	for _, c := range chars {
+		visited[c] = make(map[int]bool)
+	}
+	queue := []node{node{'@', "", 0}}
+
+	min := math.MaxInt32
+
+	for len(queue) > 0 {
+		current := queue[0]
+		queue = queue[1:]
+
+		if visited[current.val][bitwiseKeys(current.keys)] {
+			continue
+		}
+		visited[current.val][bitwiseKeys(current.keys)] = true
+
+		if len(current.keys) == 26 {
+			min = utils.Min(min, current.dist)
+			if min < current.dist {
+				fmt.Println(min)
+			}
+		}
+
+		for k, v := range edges[current.val] {
+			if !containsAll(v.gates, current.keys) || strings.ContainsRune(current.keys, k) {
+				continue
+			}
+			newKeys := utils.AppendRune(current.keys, k)
+			newNode := node{k, newKeys, current.dist + v.dist}
+			queue = append(queue, newNode)
+		}
+	}
+
+	return min
+}
+
+func containsAll(gates, keys string) bool {
+	for _, c := range gates {
+		if !strings.ContainsRune(keys, c) {
+			return false
+		}
+	}
+	return true
+}
+
+func getEdges(grid map[vec2]rune) map[rune](map[rune]edge) {
+	ans := make(map[rune](map[rune]edge))
+	for _, node := range chars {
+		ans[node] = bfs(grid, getNode(grid, node))
+	}
+	return ans
+}
+
+type edge struct {
+	pos   vec2
+	gates string
+	dist  int
+}
+
+func bfs(grid map[vec2]rune, start vec2) map[rune]edge {
 	visited := make(map[vec2]bool)
-	queue := []keyPos{keyPos{start, 0}}
-	gates := strings.ToUpper(keys)
-	reachable := make(map[rune]keyPos)
+	queue := []edge{edge{start, "", 0}}
+	keys := make(map[rune]edge)
 
 	for len(queue) > 0 {
 		current := queue[0]
@@ -74,21 +128,21 @@ func bfs(grid map[vec2]rune, start vec2, keys string) map[rune]keyPos {
 
 		visited[current.pos] = true
 		val := grid[current.pos]
-		if isKey(val) && !strings.ContainsRune(keys, val) {
-			reachable[val] = current
+		if isKey(val) {
+			keys[val] = current
 		}
 		for _, dir := range directions {
-			next := keyPos{current.pos.Add(dir), current.dist + 1}
+			next := edge{current.pos.Add(dir), current.gates, current.dist + 1}
 			if !visited[next.pos] && grid[next.pos] != '#' {
 				val = grid[next.pos]
-				if isGate(val) && !strings.ContainsRune(gates, val) {
-					continue
+				if isGate(val) {
+					next.gates = utils.AppendRune(next.gates, val-'A'+'a')
 				}
 				queue = append(queue, next)
 			}
 		}
 	}
-	return reachable
+	return keys
 }
 
 func getNode(grid map[vec2]rune, node rune) vec2 {

@@ -2,6 +2,7 @@ package utils
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -115,4 +116,66 @@ func Sgn(x int) int {
 // Lcm returns least common multiple of two numbers
 func Lcm(a, b int) int {
 	return Abs(a*b) / Gcd(a, b)
+}
+
+// GridToMap converts array of strings to map (by coords) of characters
+func GridToMap(grid []string) map[Vector2D]rune {
+	ans := make(map[Vector2D]rune)
+	for y, row := range grid {
+		for x, v := range row {
+			ans[Vector2D{x, y}] = v
+		}
+	}
+	return ans
+}
+
+// ReadGrid reads array of strings from file into a map (by coords) of characters
+func ReadGrid(path string) map[Vector2D]rune {
+	return GridToMap(ReadLines(path))
+}
+
+// GridSize returns dimensions of grid (max x,y coords)
+func GridSize(grid map[Vector2D]rune) Vector2D {
+	var ans Vector2D
+	for k := range grid {
+		ans = MaxVec2(ans, k)
+	}
+	return ans.Add(Vector2D{1, 1})
+}
+
+// PrintGrid prints grid to stdout
+func PrintGrid(grid map[Vector2D]rune) {
+	dims := GridSize(grid)
+	for y := 0; y < dims.Y; y++ {
+		for x := 0; x < dims.X; x++ {
+			fmt.Printf("%c", grid[Vector2D{x, y}])
+		}
+		fmt.Println()
+	}
+}
+
+// StrToRunes converts string to array of characters
+func StrToRunes(str string) []rune {
+	ans := make([]rune, len(str))
+	for i, c := range str {
+		ans[i] = c
+	}
+	return ans
+}
+
+// RunesToStr converts array of characters to string
+func RunesToStr(runes []rune) string {
+	var builder strings.Builder
+	for _, c := range runes {
+		builder.WriteRune(c)
+	}
+	return builder.String()
+}
+
+// AppendRune appends a character to end of string
+func AppendRune(str string, c rune) string {
+	var builder strings.Builder
+	builder.WriteString(str)
+	builder.WriteRune(c)
+	return builder.String()
 }

@@ -8,10 +8,8 @@ import (
 )
 
 func main() {
-	code := utils.ReadIntCode("input.txt")
-
 	var vm utils.AsciiCode
-	vm.Init(code)
+	vm.InitFromFile("input.txt")
 
 	instructions := strings.Join(utils.ReadLines("part2.spring"), "\n")
 	vm.WriteLn(instructions)

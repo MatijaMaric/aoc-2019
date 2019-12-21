@@ -1,5 +1,53 @@
 package utils
 
+type IntCodeVM struct {
+	code   []int
+	memory []int
+	input  chan int
+	output chan int
+}
+
+func (vm *IntCodeVM) InitFromFile(path string) {
+	vm.Init(ReadIntCode(path))
+}
+
+func (vm *IntCodeVM) Init(code []int) {
+	vm.code = make([]int, len(code))
+	copy(vm.code, code)
+	vm.Reset()
+}
+
+func (vm *IntCodeVM) Reset() {
+	vm.memory = make([]int, len(vm.code))
+	copy(vm.memory, vm.code)
+
+	SafeClose(vm.input)
+	SafeClose(vm.output)
+
+	vm.input = make(chan int, 1024)
+	vm.output = make(chan int)
+
+	go IntCodeMachine(vm.memory, vm.input, vm.output)
+}
+
+func (vm *IntCodeVM) Write(input int) {
+	vm.input <- input
+}
+
+func (vm *IntCodeVM) TryRead() (int, bool) {
+	v, ok := <-vm.output
+	return v, ok
+}
+
+func (vm *IntCodeVM) Flush() []int {
+	var ans []int
+	for x := range vm.output {
+		ans = append(ans, x)
+	}
+	vm.Reset()
+	return ans
+}
+
 // ReadIntCode reads IntCode from file
 func ReadIntCode(path string) []int {
 	return IntList(ReadLines(path)[0])

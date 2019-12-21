@@ -6,32 +6,27 @@ import (
 )
 
 type AsciiCode struct {
-	code   []int
-	memory []int
-	input  chan int
-	output chan int
+	intcode IntCodeVM
+}
+
+func (ac *AsciiCode) Wrap(vm IntCodeVM) {
+	ac.intcode = vm
+}
+
+func (ac *AsciiCode) InitFromFile(path string) {
+	ac.intcode.InitFromFile(path)
 }
 
 func (ac *AsciiCode) Init(code []int) {
-	ac.code = make([]int, len(code))
-	copy(ac.code, code)
-	ac.Reset()
+	ac.intcode.Init(code)
 }
 
 func (ac *AsciiCode) Reset() {
-	ac.memory = make([]int, len(ac.code))
-	copy(ac.memory, ac.code)
-	SafeClose(ac.input)
-	SafeClose(ac.output)
-
-	ac.input = make(chan int, 1024)
-	ac.output = make(chan int)
-
-	go IntCodeMachine(ac.code, ac.input, ac.output)
+	ac.intcode.Reset()
 }
 
 func (ac *AsciiCode) WriteInt(input int) {
-	ac.input <- input
+	ac.intcode.Write(input)
 }
 
 func (ac *AsciiCode) Write(str string) {
@@ -47,13 +42,12 @@ func (ac *AsciiCode) WriteLn(str string) {
 
 func (ac *AsciiCode) Flush() string {
 	var builder strings.Builder
-	for a := range ac.output {
+	for _, a := range ac.intcode.Flush() {
 		if a < 255 {
 			builder.WriteRune(rune(a))
 		} else {
 			builder.WriteString(fmt.Sprintf("%d", a))
 		}
 	}
-	ac.Reset()
 	return builder.String()
 }

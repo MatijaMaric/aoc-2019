@@ -6,7 +6,14 @@ import (
 	"github.com/MatijaMaric/aoc-2019/utils"
 )
 
+type drone struct {
+	utils.IntCodeVM
+}
+
 func main() {
+	// var vm drone
+	// vm.InitFromFile("input.txt")
+
 	code := utils.ReadIntCode("input.txt")
 
 	fmt.Println(part1(code))
@@ -28,7 +35,6 @@ func part1(code []int) int {
 func part2(code []int) int {
 	x, y := 0, 99
 	for {
-		fmt.Println(x, y)
 		if ping(code, x, y) {
 			if ping(code, x+99, y-99) {
 				return 10000*x + y - 99
@@ -41,12 +47,10 @@ func part2(code []int) int {
 }
 
 func ping(code []int, x, y int) bool {
-	input, output := make(chan int, 1), make(chan int)
+	var vm utils.IntCodeVM
+	vm.Init(code)
+	vm.Write(x)
+	vm.Write(y)
 
-	go utils.IntCodeMachine(code, input, output)
-
-	input <- x
-	input <- y
-
-	return <-output == 1
+	return vm.Read() == 1
 }

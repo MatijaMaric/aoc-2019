@@ -39,6 +39,10 @@ func (vm *IntCodeVM) TryRead() (int, bool) {
 	return v, ok
 }
 
+func (vm *IntCodeVM) Read() int {
+	return <-vm.output
+}
+
 func (vm *IntCodeVM) Flush() []int {
 	var ans []int
 	for x := range vm.output {

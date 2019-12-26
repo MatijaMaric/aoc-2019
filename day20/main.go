@@ -18,16 +18,10 @@ type portal struct {
 
 func main() {
 	grid := utils.ReadGrid("input.txt")
-	// utils.PrintGrid(grid)
-	// fmt.Println(grid)
 	portals := findPortals(grid)
-	// for _, v := range portals {
-	// 	fmt.Println(v.name, v.from, v.to)
-	// }
 	edges := findEdges(grid, portals)
-	// fmt.Println(edges)
+
 	dists := findPath(edges)
-	// fmt.Println(dists)
 
 	fmt.Println(dists["ZZ"] - 1)
 }
@@ -69,6 +63,14 @@ var (
 )
 
 var directions = []vec2{up, down, left, right}
+
+func findEdgesRec(grid map[vec2]rune, portals map[string]*portal, from string) map[string](map[string]int) {
+	ans := make(map[string](map[string]int))
+
+	// edges := bfs(grid, portals[from].from)
+
+	return ans
+}
 
 func findEdges(grid map[vec2]rune, portals map[string]*portal) map[string](map[string]int) {
 	ans := make(map[string](map[string]int))

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/MatijaMaric/aoc-2019/utils"
@@ -90,7 +91,7 @@ func main() {
 	skipCommand := 0
 
 	for out := range stroutput {
-		fmt.Println(out)
+		// fmt.Println(out)
 		if strings.HasPrefix(out, "==") {
 			lastRoom := currentRoom
 			currentRoom = strings.Trim(out, "= ")
@@ -142,7 +143,7 @@ func main() {
 					combinations = generateCombinations(inventory)
 				}
 			} else if strings.HasPrefix(currentRoom, "Security Checkpoint") && !searching && rooms["Pressure-Sensitive Floor"] {
-				fmt.Println(inventory)
+				// fmt.Println(inventory)
 				// reset inventory
 
 				for _, item := range inventory {
@@ -166,10 +167,12 @@ func main() {
 				command <- lastDirection
 			}
 		}
+		if strings.HasPrefix(out, "\"Oh, hello") {
+			re, _ := regexp.Compile(`\d+`)
+			fmt.Println(re.FindAllString(out, -1)[0])
+			os.Exit(0)
+		}
 	}
-
-	fmt.Println(currentRoom, mode)
-
 	<-halt
 
 }
